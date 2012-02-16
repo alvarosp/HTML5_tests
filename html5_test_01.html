@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            #myCanvas {
+                border: 1px solid #9C9898;
+            }
+        </style>
+        <script>
+            window.requestAnimFrame = (function(callback){
+                return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function(callback){
+                    window.setTimeout(callback, 1000 / 60);
+                };
+            })();
+            
+            function animate(lastTime, myRectangle){
+                var canvas = document.getElementById("myCanvas");
+                var context = canvas.getContext("2d");
+                
+                // update
+                var date = new Date();
+                var time = date.getTime();
+                var timeDiff = time - lastTime;
+                var linearSpeed = 0; // pixels / second
+                var linearDistEachFrame = linearSpeed * timeDiff / 1000;
+                var currentX = myRectangle.x;
+				var currentY = myRectangle.y;
+                var newX = currentX + myRectangle.speedX * timeDiff / 1000;
+				var newY = currentY + myRectangle.speedY * timeDiff / 1000;
+				
+				if (newX < 0 || newX > canvas.width - myRectangle.width){
+					myRectangle.speedX = -myRectangle.speedX + Math.random() * 40 - 20;
+					newX = currentX + myRectangle.speedX * timeDiff / 1000;
+					sessionStorage.setItem('vueltas', parseInt(sessionStorage.getItem('vueltas')) + 1);
+				}
+				if (newY < 0 || newY > canvas.height - myRectangle.height){
+					myRectangle.speedY = -myRectangle.speedY + Math.random() * 40 - 20;
+					newY = currentY + myRectangle.speedY * timeDiff / 1000;
+					sessionStorage.setItem('vueltas', parseInt(sessionStorage.getItem('vueltas')) + 1);
+				}
+								
+				myRectangle.x = newX;
+				myRectangle.y = newY;
+				
+				var textarea = document.getElementById("ta");
+				textarea.value = 'Hits: ' + sessionStorage.getItem('vueltas');
+				
+                /*if (currentX < canvas.width - myRectangle.borderWidth / 2) {
+                    
+                }else{
+					var newX = - myRectangle.width;
+					myRectangle.x = newX;
+					var textarea = document.getElementById("ta");
+					sessionStorage.setItem('vueltas', parseInt(sessionStorage.getItem('vueltas')) + 1);
+					textarea.value = sessionStorage.getItem('vueltas');
+				}*/
+                lastTime = time;
+                
+                // clear
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // draw
+                context.beginPath();
+                context.rect(myRectangle.x, myRectangle.y, myRectangle.width, myRectangle.height);
+                
+                context.fillStyle = "#8ED6FF";
+                context.fill();
+                context.lineWidth = myRectangle.borderWidth;
+                context.strokeStyle = "black";
+                context.stroke();
+                
+                // request new frame
+                requestAnimFrame(function(){
+                    animate(lastTime, myRectangle);
+                });
+            }
+            
+            window.onload = function(){
+				sessionStorage.setItem('vueltas', 0);
+                var myRectangle = {
+                    x: document.getElementById("myCanvas").width / 2,
+                    y: document.getElementById("myCanvas").height / 2,
+                    width: 50,
+                    height: 50,
+                    borderWidth: 2,
+					speedX: Math.random() * 200 - 100,
+					speedY: Math.random() * 200 - 100
+                };
+                
+                var date = new Date();
+                var time = date.getTime();
+                animate(time, myRectangle);
+            };
+        </script>
+    </head>
+    <body onmousedown="return false;">
+        <canvas id="myCanvas" width="400" height="400">
+        </canvas>
+		<textarea id="ta"> Hits: 0
+		</textarea>
+	</body>
+</html>
