@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            #myCanvas {
+                border: 1px solid #9C9898;
+            }
+        </style>
+        <script>
+            window.requestAnimFrame = (function(callback){
+                return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function(callback){
+                    window.setTimeout(callback, 1000 / 60);
+                };
+            })();
+            
+            
+            
+            window.onload = function(){
+				var can = document.getElementById("myCanvas");
+                var ctx = can.getContext('2d');
+                var casillas = 10;
+                for (var i = 1; i < casillas; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0,can.width/casillas*i);
+                    ctx.lineTo(can.height,can.width/casillas*i);
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(can.height/casillas*i,0);
+                    ctx.lineTo(can.height/casillas*i,can.width);
+                    ctx.closePath();
+                    ctx.stroke();
+                };
+                
+            };
+        </script>
+    </head>
+    <body onmousedown="return false;">
+        <canvas id="myCanvas" width="400" height="400">
+        </canvas>
+		<textarea id="ta"> Puntos: 0
+		</textarea>
+	</body>
+</html>
