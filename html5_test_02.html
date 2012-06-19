@@ -2,54 +2,94 @@
 <html>
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <style>
-            body {
-                margin: 0px;
-                padding: 0px;
-            }
-            
-            #myCanvas {
-                border: 1px solid #9C9898;
-            }
-        </style>
-        <script>
-            window.requestAnimFrame = (function(callback){
-                return window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                window.mozRequestAnimationFrame ||
-                window.oRequestAnimationFrame ||
-                window.msRequestAnimationFrame ||
-                function(callback){
-                    window.setTimeout(callback, 1000 / 60);
-                };
-            })();
-            
-            
-            
-            window.onload = function(){
-				var can = document.getElementById("myCanvas");
-                var ctx = can.getContext('2d');
-                var casillas = 10;
-                for (var i = 1; i < casillas; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(0,can.width/casillas*i);
-                    ctx.lineTo(can.height,can.width/casillas*i);
-                    ctx.closePath();
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(can.height/casillas*i,0);
-                    ctx.lineTo(can.height/casillas*i,can.width);
-                    ctx.closePath();
-                    ctx.stroke();
-                };
-                
-            };
-        </script>
-    </head>
-    <body onmousedown="return false;">
-        <canvas id="myCanvas" width="400" height="400">
-        </canvas>
-		<textarea id="ta"> Puntos: 0
+		<style>
+			body {
+				margin: 0px;
+				padding: 0px;
+			}
+			
+			#myCanvas {
+				border: 1px solid #9C9898;
+			}
+		</style>
+		<script>
+			window.requestAnimFrame = (function(callback){
+				return window.requestAnimationFrame ||
+				window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame ||
+				window.oRequestAnimationFrame ||
+				window.msRequestAnimationFrame ||
+				function(callback){
+					window.setTimeout(callback, 1000 / 60);
+				};
+			})();
+			window.addEventListener('keydown',doKeyDown,true);
+			var can;
+			var ctx;
+			var x = 0;
+			var y = 0;
+			var casillas = 20;
+			var textarea;
+			var hits = 0;
+
+			function doKeyDown(evt){
+				switch (evt.keyCode) {
+					case 38:  /* Up arrow was pressed */
+					if (y > 0){
+						y -= 1;
+					}
+					break;
+					case 40:  /* Down arrow was pressed */
+					if (y < casillas){
+						y += 1;
+					}
+					break;
+					case 37:  /* Left arrow was pressed */
+					if (x > 0){
+						x -= 1;
+					}
+					break;
+					case 39:  /* Right arrow was pressed */
+					if (x < casillas){
+						x += 1;
+					}
+					break;
+				}
+				draw();
+				hits++;
+				//textarea.value = 'Hits: ' + hits;
+			}
+			
+			function draw(){
+				ctx.beginPath();
+				ctx.rect(x*can.width/casillas , y*can.height/casillas, can.width/casillas, can.height/casillas);
+				ctx.fill();
+			}
+
+			window.onload = function(){
+				can = document.getElementById("myCanvas");
+				ctx = can.getContext('2d');
+				textarea = document.getElementById("ta");
+				for (var i = 1; i < casillas; i++) {
+					ctx.beginPath();
+					ctx.moveTo(0,can.width/casillas*i);
+					ctx.lineTo(can.height,can.width/casillas*i);
+					ctx.closePath();
+					ctx.stroke();
+					ctx.beginPath();
+					ctx.moveTo(can.height/casillas*i,0);
+					ctx.lineTo(can.height/casillas*i,can.width);
+					ctx.closePath();
+					ctx.stroke();
+				};
+				draw();
+			};
+		</script>
+	</head>
+	<body onmousedown="return false;">
+		<canvas id="myCanvas" width="400" height="400">
+		</canvas>
+		<textarea id="ta"> Hits: 0
 		</textarea>
 	</body>
 </html>
