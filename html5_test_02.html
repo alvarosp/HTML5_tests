@@ -28,41 +28,44 @@
 			var ctx;
 			var x = 0;
 			var y = 0;
-			var casillas = 20;
+			var casillas = 10;
 			var textarea;
 			var hits = 0;
 
 			function doKeyDown(evt){
+				var tx = 0;
+				var ty = 0;
 				switch (evt.keyCode) {
 					case 38:  /* Up arrow was pressed */
-					if (y > 0){
-						y -= 1;
-					}
-					break;
+						ty = -1;
+						break;
 					case 40:  /* Down arrow was pressed */
-					if (y < casillas){
-						y += 1;
-					}
-					break;
+						ty = 1;
+						break;
 					case 37:  /* Left arrow was pressed */
-					if (x > 0){
-						x -= 1;
-					}
-					break;
+						tx = -1;
+						break;
 					case 39:  /* Right arrow was pressed */
-					if (x < casillas){
-						x += 1;
-					}
-					break;
+						tx = 1;
+						break;
 				}
-				draw();
+				update(tx, ty);
 				hits++;
-				//textarea.value = 'Hits: ' + hits;
+				info();
 			}
 			
-			function draw(){
+			function info(){
+				textarea.value = 'X:' + x + '\tY:' + y + '\nMovements: ' + hits;
+			}
+
+			function update(tx, ty){
+				if(x + tx < 0 || x + tx > casillas -1 || y + ty < 0 || y + ty > casillas -1)
+					return;
+				x += tx;
+				y += ty;
+				ctx.clearRect(0, 0, can.width, can.height);
 				ctx.beginPath();
-				ctx.rect(x*can.width/casillas , y*can.height/casillas, can.width/casillas, can.height/casillas);
+				ctx.rect(x * can.width / casillas , y * can.height / casillas, can.width / casillas, can.height / casillas);
 				ctx.fill();
 			}
 
@@ -70,26 +73,16 @@
 				can = document.getElementById("myCanvas");
 				ctx = can.getContext('2d');
 				textarea = document.getElementById("ta");
-				for (var i = 1; i < casillas; i++) {
-					ctx.beginPath();
-					ctx.moveTo(0,can.width/casillas*i);
-					ctx.lineTo(can.height,can.width/casillas*i);
-					ctx.closePath();
-					ctx.stroke();
-					ctx.beginPath();
-					ctx.moveTo(can.height/casillas*i,0);
-					ctx.lineTo(can.height/casillas*i,can.width);
-					ctx.closePath();
-					ctx.stroke();
-				};
-				draw();
+				update(0, 0);
+				info();
 			};
 		</script>
 	</head>
 	<body onmousedown="return false;">
 		<canvas id="myCanvas" width="400" height="400">
+			Your browser does not support HTML5 Canvas.
 		</canvas>
-		<textarea id="ta"> Hits: 0
+		<textarea id="ta">
 		</textarea>
 	</body>
 </html>
