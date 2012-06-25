@@ -1,0 +1,1 @@
+This folder contains some tests in HTML5 mainly using the new canvas tag.
