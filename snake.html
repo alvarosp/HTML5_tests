@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<style>
+			body {
+				margin: 0px;
+				padding: 0px;
+			}
+			
+			#myCanvas {
+				border: 1px solid #9C9898;
+			}
+		</style>
+		<script>
+			window.requestAnimFrame = (function(callback){
+				return window.requestAnimationFrame ||
+				window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame ||
+				window.oRequestAnimationFrame ||
+				window.msRequestAnimationFrame ||
+				function(callback){
+					window.setTimeout(callback, 1000 / 60);
+				};
+			})();
+			window.addEventListener('keydown',doKeyDown,true);
+			var casillas = 20; //Grid is squared. Beware if (canvas.width / casillas) is not a round number.
+			var game_speed = 80; // milisecs to refresh canvas.
+			var canvas;
+			var context;
+			var head_x;
+			var head_y;
+			var dx;
+			var dy;
+			var giro;
+			var tail_x;
+			var tail_y;
+			var tail_counter; // used when apple is eaten
+			var textarea;
+			var button_start;
+			var points;
+			var game_status; //0: paused, 1: running, 2: dead
+			var interv;
+			var data; //Array with info for snake movement
+
+			function doKeyDown(evt){
+				//textarea.value = evt.keyCode;
+				if (evt.keyCode == 80) /* P key was pressed */
+					press_button();
+				if (game_status != 1 || evt.keyCode != 37 && evt.keyCode != 38 && evt.keyCode != 39 && evt.keyCode != 40)
+					return;
+				dx = 0;
+				dy = 0;
+				giro = evt.keyCode;
+				switch (giro) {
+					case 38:  /* Up arrow was pressed */
+						dy = -1;
+						break;
+					case 40:  /* Down arrow was pressed */
+						dy = 1;
+						break;
+					case 37:  /* Left arrow was pressed */
+						dx = -1;
+						break;
+					case 39:  /* Right arrow was pressed */
+						dx = 1;
+						break;
+				}
+			}
+			
+			function info(){
+				textarea.value = 'X:' + head_x + '\tY:' + head_y + '\nPoints: ' + points;
+			}
+
+			function update(){
+				if(head_x + dx < 0 || head_x + dx > casillas - 1 || head_y + dy < 0 || head_y + dy > casillas - 1 ){
+					dead();
+					return;
+				}
+				if(data[head_x + dx][head_y + dy] == 2){// Apple eaten
+					tail_counter += 5;
+					create_apple();
+					data[head_x + dx][head_y + dy] = 0;
+					points += 9;
+					info();
+				}
+				if(data[head_x + dx][head_y + dy] != 0){
+					dead();
+					return;
+				}
+				data[head_x][head_y] = giro;
+				head_x += dx;
+				head_y += dy;
+				data[head_x][head_y] = 1;
+				if (tail_counter > 0){
+					tail_counter--;
+				}else{
+					context.clearRect (tail_x * canvas.width / casillas , tail_y * canvas.height / casillas, canvas.width / casillas, canvas.height / casillas);
+					var tmp_giro = data[tail_x][tail_y];
+					data[tail_x][tail_y] = 0;
+					if(tmp_giro == 38)
+						tail_y -= 1;
+					if(tmp_giro == 40)
+						tail_y += 1;
+					if(tmp_giro == 37)
+						tail_x -= 1;
+					if(tmp_giro == 39)
+						tail_x += 1;
+				}
+				fill(head_x, head_y);
+				info();
+			}
+
+			function fill(tx, ty, type){
+				context.beginPath();
+				context.rect(tx * canvas.width / casillas , ty * canvas.height / casillas, canvas.width / casillas, canvas.height / casillas);
+				context.fillStyle = "black";
+				context.fill();
+			}
+
+			function press_button(){
+				if (game_status == 0){
+					game_status = 1;
+					interv = setInterval(function(){update()}, game_speed);
+					button_start.value = 'PAUSE(P)';
+				}else if(game_status == 1){
+					game_status = 0;
+					clearInterval(interv);
+					button_start.value = 'START(P)';
+				}else if(game_status == 2){
+					game_status = 0;
+					button_start.value = 'START(P)';
+					restart();
+				}
+			}
+
+			function dead(){
+				game_status = 2;
+				clearInterval(interv);
+				button_start.value = 'RESTART(P)';
+				textarea.value = 'You have died with ' + points + ' points.\nClick restart(P) to begin';
+			}
+
+			window.onload = function(){
+				canvas = document.getElementById("myCanvas");
+				context = canvas.getContext('2d');
+				textarea = document.getElementById("ta");
+				button_start = document.getElementById("b_start");
+				restart();
+			};
+
+			function restart(){
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				head_x = 10;
+				head_y = 5;
+				dx = 1;
+				dy = 0;
+				giro = 39;
+				tail_x = 1;
+				tail_y = 5;
+				points = 0;
+				game_status = 0;
+				tail_counter = 0;
+				data = new Array(casillas);
+				for (i = 0; i < data.length; i++) {
+  					data[i] = new Array(casillas);
+				}
+				for (i = 0; i < data.length; i++) {
+					for (j = 0; j < data[i].length; j++) {
+						data[i][j] = 0;
+					}
+				}
+				for (i = tail_x; i < head_x; i++) {
+					data[i][head_y] = giro;
+					fill(i, head_y);
+				}
+				fill(i, head_y);
+				create_apple();
+				info();
+			}
+
+			function create_apple(){
+				var tmpx;
+				var tmpy;
+				do{
+					tmpx = Math.floor(Math.random() * casillas);
+					tmpy = Math.floor(Math.random() * casillas);
+				}
+				while (data[tmpx][tmpy] != 0);
+				data[tmpx][tmpy] = 2;
+				context.beginPath();
+    			context.arc((tmpx + 0.5)* canvas.width / casillas , (tmpy + 0.5)* canvas.height / casillas , canvas.width / casillas/2 , 0, 2 * Math.PI, false);
+     			context.fillStyle = "red";
+     			context.fill();
+			}
+		</script>
+	</head>
+	<body onmousedown="return false;">
+		<canvas id="myCanvas" width="500" height="500">
+			Your browser does not support HTML5 Canvas.
+		</canvas>
+		<input id="b_start" type="button" onclick="press_button()" value="START(P)"/>
+		<textarea id="ta"></textarea>
+	</body>
+</html>
