@@ -11,6 +11,9 @@
 			#myCanvas {
 				border: 1px solid #9C9898;
 			}
+			textarea{
+				height: 200px;
+			}
 		</style>
 		<script>
 			window.requestAnimFrame = (function(callback){
@@ -139,6 +142,16 @@
 				clearInterval(interv);
 				button_start.value = 'RESTART(P)';
 				textarea.value = 'You have died with ' + points + ' points.\nClick restart(P) to begin';
+				updateHighScore();
+			}
+
+			function updateHighScore(){
+				if (localStorage.highScore){
+					localStorage.highScore = Math.max(Number(localStorage.highScore), points);
+				} else{
+					localStorage.highScore = points;
+				}
+				textarea.value += "\n\nHIGH SCORE: " + localStorage.highScore;
 			}
 
 			window.onload = function(){
