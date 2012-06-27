@@ -29,13 +29,12 @@
 			window.addEventListener('keydown',doKeyDown,true);
 			var casillas = 20; //Grid is squared. Beware if (canvas.width / casillas) is not a round number.
 			var game_speed = 80; // milisecs to refresh canvas.
+			var delta = [[0],[-1,0],[0,-1],[1,0],[0,1]];//dx and dy depending on actual orientation.
 			var canvas;
 			var context;
 			var head_x;
 			var head_y;
-			var dx;
-			var dy;
-			var giro;
+			var orientation;//1 to 4 based on arrow key code (37 to 40)
 			var tail_x;
 			var tail_y;
 			var tail_counter; // used when apple is eaten
@@ -52,23 +51,7 @@
 					press_button();
 				if (game_status != 1 || evt.keyCode != 37 && evt.keyCode != 38 && evt.keyCode != 39 && evt.keyCode != 40)
 					return;
-				dx = 0;
-				dy = 0;
-				giro = evt.keyCode;
-				switch (giro) {
-					case 38:  /* Up arrow was pressed */
-						dy = -1;
-						break;
-					case 40:  /* Down arrow was pressed */
-						dy = 1;
-						break;
-					case 37:  /* Left arrow was pressed */
-						dx = -1;
-						break;
-					case 39:  /* Right arrow was pressed */
-						dx = 1;
-						break;
-				}
+				orientation = evt.keyCode - 36;
 			}
 			
 			function info(){
@@ -76,39 +59,35 @@
 			}
 
 			function update(){
-				if(head_x + dx < 0 || head_x + dx > casillas - 1 || head_y + dy < 0 || head_y + dy > casillas - 1 ){
+				var tmp_head_x = head_x + delta[orientation][0];
+				var tmp_head_y = head_y + delta[orientation][1];
+				if(tmp_head_x < 0 || tmp_head_x > casillas - 1 || tmp_head_y < 0 || tmp_head_y > casillas - 1 ){
 					dead();
 					return;
 				}
-				if(data[head_x + dx][head_y + dy] == 2){// Apple eaten
+				if(data[tmp_head_x][tmp_head_y] == 2){// Apple eaten
 					tail_counter += 5;
 					create_apple();
-					data[head_x + dx][head_y + dy] = 0;
+					data[tmp_head_x][tmp_head_y] = 0;
 					points += 9;
 					info();
 				}
-				if(data[head_x + dx][head_y + dy] != 0){
+				if(data[tmp_head_x][tmp_head_y] != 0){
 					dead();
 					return;
 				}
-				data[head_x][head_y] = giro;
-				head_x += dx;
-				head_y += dy;
+				data[head_x][head_y] = orientation;
+				head_x = tmp_head_x;
+				head_y = tmp_head_y;
 				data[head_x][head_y] = 1;
 				if (tail_counter > 0){
 					tail_counter--;
 				}else{
 					context.clearRect (tail_x * canvas.width / casillas , tail_y * canvas.height / casillas, canvas.width / casillas, canvas.height / casillas);
-					var tmp_giro = data[tail_x][tail_y];
+					var tail_giro = data[tail_x][tail_y];
 					data[tail_x][tail_y] = 0;
-					if(tmp_giro == 38)
-						tail_y -= 1;
-					if(tmp_giro == 40)
-						tail_y += 1;
-					if(tmp_giro == 37)
-						tail_x -= 1;
-					if(tmp_giro == 39)
-						tail_x += 1;
+					tail_x += delta[tail_giro][0];
+					tail_y += delta[tail_giro][1];
 				}
 				fill(head_x, head_y);
 				info();
@@ -166,9 +145,7 @@
 				context.clearRect(0, 0, canvas.width, canvas.height);
 				head_x = 10;
 				head_y = 5;
-				dx = 1;
-				dy = 0;
-				giro = 39;
+				orientation = 3;
 				tail_x = 1;
 				tail_y = 5;
 				points = 0;
@@ -184,7 +161,7 @@
 					}
 				}
 				for (i = tail_x; i < head_x; i++) {
-					data[i][head_y] = giro;
+					data[i][head_y] = orientation;
 					fill(i, head_y);
 				}
 				fill(i, head_y);
