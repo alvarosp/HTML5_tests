@@ -7,7 +7,6 @@
 				margin: 0px;
 				padding: 0px;
 			}
-			
 			#myCanvas {
 				border: 1px solid #9C9898;
 			}
@@ -27,11 +26,15 @@
 				};
 			})();
 			window.addEventListener('keydown',doKeyDown,true);
-			var casillas = 20; //Grid is squared. Beware if (canvas.width / casillas) is not a round number.
+			var casillas = 20; //Grid is squared. Make sure square_size * casillas > canvas.width.
 			var game_speed = 80; // milisecs to refresh canvas.
-			var delta = [[0],[-1,0],[0,-1],[1,0],[0,1]];//dx and dy depending on actual orientation.
+			var delta = [[-99],[-1,0],[0,-1],[1,0],[0,1]];//dx and dy depending on actual orientation.
 			var canvas;
 			var context;
+			var grid_offX = 50;
+			var grid_offY = 50;
+			var grid_delta_off = 1;//Small offset so that snake doesn't erase the border.
+			var square_size = 20;
 			var head_x;
 			var head_y;
 			var orientation;//1 to 4 based on arrow key code (37 to 40)
@@ -83,7 +86,7 @@
 				if (tail_counter > 0){
 					tail_counter--;
 				}else{
-					context.clearRect (tail_x * canvas.width / casillas , tail_y * canvas.height / casillas, canvas.width / casillas, canvas.height / casillas);
+					context.clearRect (grid_offX + tail_x * square_size , grid_offY + tail_y * square_size, square_size, square_size);
 					var tail_giro = data[tail_x][tail_y];
 					data[tail_x][tail_y] = 0;
 					tail_x += delta[tail_giro][0];
@@ -95,7 +98,7 @@
 
 			function fill(tx, ty, type){
 				context.beginPath();
-				context.rect(tx * canvas.width / casillas , ty * canvas.height / casillas, canvas.width / casillas, canvas.height / casillas);
+				context.rect(grid_offX + tx * square_size ,grid_offY +  ty * square_size, square_size, square_size);
 				context.fillStyle = "black";
 				context.fill();
 			}
@@ -127,7 +130,7 @@
 			function updateHighScore(){
 				if (localStorage.highScore){
 					localStorage.highScore = Math.max(Number(localStorage.highScore), points);
-				} else{
+				}else{
 					localStorage.highScore = points;
 				}
 				textarea.value += "\n\nHIGH SCORE: " + localStorage.highScore;
@@ -143,6 +146,10 @@
 
 			function restart(){
 				context.clearRect(0, 0, canvas.width, canvas.height);
+				context.beginPath();
+				context.rect(grid_offX - grid_delta_off, grid_offY - grid_delta_off, square_size * casillas + 2 * grid_delta_off, square_size * casillas + 2 * grid_delta_off);
+				context.strokeStyle = "black";
+				context.stroke();
 				head_x = 10;
 				head_y = 5;
 				orientation = 3;
@@ -179,7 +186,7 @@
 				while (data[tmpx][tmpy] != 0);
 				data[tmpx][tmpy] = 2;
 				context.beginPath();
-    			context.arc((tmpx + 0.5)* canvas.width / casillas , (tmpy + 0.5)* canvas.height / casillas , canvas.width / casillas/2 , 0, 2 * Math.PI, false);
+    			context.arc(grid_offX + (tmpx + 0.5) * square_size , grid_offY + (tmpy + 0.5)* square_size , square_size / 2 , 0, 2 * Math.PI, false);
      			context.fillStyle = "red";
      			context.fill();
 			}
