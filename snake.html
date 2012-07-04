@@ -26,7 +26,8 @@
 				};
 			})();
 			window.addEventListener('keydown',doKeyDown,true);
-			var casillas = 20; //Grid is squared. Make sure square_size * casillas > canvas.width.
+			//CONSTANTS
+			var casillas = 20; //Grid is squared. Make sure square_size * casillas < canvas.height.
 			var game_speed = 80; // milisecs to refresh canvas.
 			var delta = [[-99],[-1,0],[0,-1],[1,0],[0,1]];//dx and dy depending on actual orientation.
 			var canvas;
@@ -35,13 +36,14 @@
 			var grid_offY = 50;
 			var grid_delta_off = 1;//Small offset so that snake doesn't erase the border.
 			var square_size = 20;
+			var apple_code = 9;
+			//VARIABLES
 			var head_x;
 			var head_y;
 			var orientation;//1 to 4 based on arrow key code (37 to 40)
 			var tail_x;
 			var tail_y;
-			var tail_counter; // used when apple is eaten
-			var textarea;
+			var tail_counter; // used when apple is eaten to increase snake size
 			var button_start;
 			var points;
 			var game_status; //0: paused, 1: running, 2: dead
@@ -49,7 +51,6 @@
 			var data; //Array with info for snake movement
 
 			function doKeyDown(evt){
-				//textarea.value = evt.keyCode;
 				if (evt.keyCode == 80) /* P key was pressed */
 					press_button();
 				if (game_status != 1 || evt.keyCode != 37 && evt.keyCode != 38 && evt.keyCode != 39 && evt.keyCode != 40)
@@ -58,7 +59,17 @@
 			}
 			
 			function info(){
-				textarea.value = 'X:' + head_x + '\tY:' + head_y + '\nPoints: ' + points;
+				context.clearRect(grid_offX + square_size * casillas + 50, 200, 200, canvas.height);
+				context.fillStyle = 'black';
+				context.font = 'bold 30px sans-serif';
+				context.fillText('Points: ' + points, grid_offX + square_size * casillas + 50, 250);
+			}
+
+			function drawHighScore(){
+				context.clearRect(grid_offX + square_size * casillas + 50, 0, 200, 200);
+				context.fillStyle = 'black';
+				context.font = 'bold 15px sans-serif';
+				context.fillText('HIGH SCORE: ' + localStorage.highScore, grid_offX + square_size * casillas + 50, 50);
 			}
 
 			function update(){
@@ -68,7 +79,7 @@
 					dead();
 					return;
 				}
-				if(data[tmp_head_x][tmp_head_y] == 2){// Apple eaten
+				if(data[tmp_head_x][tmp_head_y] == apple_code){// Apple eaten
 					tail_counter += 5;
 					create_apple();
 					data[tmp_head_x][tmp_head_y] = 0;
@@ -123,7 +134,6 @@
 				game_status = 2;
 				clearInterval(interv);
 				button_start.value = 'RESTART(P)';
-				textarea.value = 'You have died with ' + points + ' points.\nClick restart(P) to begin';
 				updateHighScore();
 			}
 
@@ -133,13 +143,12 @@
 				}else{
 					localStorage.highScore = points;
 				}
-				textarea.value += "\n\nHIGH SCORE: " + localStorage.highScore;
+				drawHighScore();
 			}
 
 			window.onload = function(){
 				canvas = document.getElementById("myCanvas");
 				context = canvas.getContext('2d');
-				textarea = document.getElementById("ta");
 				button_start = document.getElementById("b_start");
 				restart();
 			};
@@ -174,6 +183,7 @@
 				fill(i, head_y);
 				create_apple();
 				info();
+				drawHighScore();
 			}
 
 			function create_apple(){
@@ -184,7 +194,7 @@
 					tmpy = Math.floor(Math.random() * casillas);
 				}
 				while (data[tmpx][tmpy] != 0);
-				data[tmpx][tmpy] = 2;
+				data[tmpx][tmpy] = apple_code;
 				context.beginPath();
     			context.arc(grid_offX + (tmpx + 0.5) * square_size , grid_offY + (tmpy + 0.5)* square_size , square_size / 2 , 0, 2 * Math.PI, false);
      			context.fillStyle = "red";
@@ -193,10 +203,9 @@
 		</script>
 	</head>
 	<body onmousedown="return false;">
-		<canvas id="myCanvas" width="500" height="500">
+		<canvas id="myCanvas" width="700" height="500">
 			Your browser does not support HTML5 Canvas.
 		</canvas>
 		<input id="b_start" type="button" onclick="press_button()" value="START(P)"/>
-		<textarea id="ta"></textarea>
 	</body>
 </html>
